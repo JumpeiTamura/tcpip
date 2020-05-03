@@ -101,6 +101,12 @@ ip netns exec ns2 ip link set ns2-veth0 up
 ip netns exec router sysctl net.ipv4.ip_forward=1
 ```
 
+## デフォルトルートの設定
+```
+ip netns exec ns1 ip route add default via 192.0.2.254
+ip netns exec ns2 ip route add default via 198.51.100.254
+```
+
 ## 疎通確認
 ### ns1 -> router
 ```
