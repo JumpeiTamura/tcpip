@@ -205,5 +205,6 @@ ip netns exec [ns-name] ip neigh flush all
 
 ## MACアドレスとARPを含めたtcpdump
 ```
-ip netns exec ns1 tcpdump -tnel -i ns1-veth0 icmp or arp
+ip netns exec [ns-name] tcpdump -tnel -i [veth-name] icmp or arp
+ip netns exec [ns-name] ping -c 3 [ip-address]
 ```
