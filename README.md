@@ -17,7 +17,7 @@ ip netns delete [name]
 ```
 # netnsを使ったネットワーク構築方法
 ## 目標の構成図
-![エビフライトライアングル](http://i.imgur.com/Jjwsc.jpg "サンプル")
+![veth](https://github.com/JumpeiTamura/tcpip/blob/master/img/ns-veth.png "veth")
 ## netns作成
 ```
 ip netns add ns1
