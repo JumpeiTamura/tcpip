@@ -190,3 +190,20 @@ ip netns exec ns2 ip route add default via 198.51.100.254
 ```
 ip netns exec ns1 ping -c 3 198.51.100.1
 ```
+
+# イーサネットに関するコマンド
+## MACアドレスの変更
+```
+ip netns exec [ns-name] ip link set dev [veth-name] address [mac-address]
+ip netns exec [ns-name] ip link show
+```
+
+## ARP(Address Resolution Protocol)キャッシュの削除
+```
+ip netns exec [ns-name] ip neigh flush all
+```
+
+## MACアドレスとARPを含めたtcpdump
+```
+ip netns exec ns1 tcpdump -tnel -i ns1-veth0 icmp or arp
+```
