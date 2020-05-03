@@ -56,7 +56,7 @@ ip netns exec ns1 ping -c 3 192.0.2.2
 
 # routerを使った通信
 ## 目標の構成図
-![veth](https://github.com/JumpeiTamura/tcpip/blob/master/img/ns-veth.png "veth")
+![router](https://github.com/JumpeiTamura/tcpip/blob/master/img/ns-router.png "router")
 
 ## netns作成
 ```
