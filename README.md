@@ -208,3 +208,8 @@ ip netns exec [ns-name] ip neigh flush all
 ip netns exec [ns-name] tcpdump -tnel -i [veth-name] icmp or arp
 ip netns exec [ns-name] ping -c 3 [ip-address]
 ```
+
+## ARPキャッシュの表示
+```
+ip netns exec [ns-name] ip neigh
+```
