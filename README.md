@@ -6,6 +6,7 @@
 - [イーサネットに関するコマンド](#イーサネットに関するコマンド)
 - [bridgeを使ったネットワーク構築方法](#bridgeを使ったネットワーク構築方法)
 - [DHCPを使ったネットワーク設定](#dhcpを使ったネットワーク設定)
+- [NATについて](#natについて)
 - [Source NATでIPアドレスの書き換え](#source-natでipアドレスの書き換え)
 
 # Network Namespace(netns)の使い方
@@ -359,7 +360,20 @@ ip netns exec client ip route show
 ip netns exec server ping -c 3 [設定されたclientのIPアドレス]
 ```
 
+# NATについて
+## NATとは
+- Network Address Translation 
+- ローカルIPはそのままだと使えない（グローバルと違って一意に特定できないので、パケットを送れない）
+- ローカルIPを何らかの方法でグローバルIPに変換する必要がある
+- IPだけでなくPortも書き換えるのでNAPTとも言う
+- Source NATとDestination NATがある
+
 # Source NATでIPアドレスの書き換え
+## Source NATとは
+- LAN内から送られたパケットのローカルIPとPortをグローバル（ルータのIPとPort）に書き換える
+- 書き換え前後の対応表（セッション）を管理
+- 受信時は逆にグローバルをローカルに変換
+
 ## 目標の構成図
 ![snat](https://github.com/JumpeiTamura/tcpip/blob/master/img/ns-snat.png "snat")
 
