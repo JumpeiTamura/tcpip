@@ -13,4 +13,5 @@ RUN apt-get install -y \
 	wget \
 	gawk \
 	dnsutils \
-	procps
+	procps \
+	iptables
