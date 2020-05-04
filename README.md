@@ -5,6 +5,7 @@
 - [routerを2つ使った通信](#routerを2つ使った通信)
 - [イーサネットに関するコマンド](#イーサネットに関するコマンド)
 - [bridgeを使ったネットワーク構築方法](#bridgeを使ったネットワーク構築方法)
+- [DHCPを使ったネットワーク設定](#DHCPを使ったネットワーク設定)
 
 # Network Namespace(netns)の使い方
 ## 新規作成
@@ -295,3 +296,66 @@ ip netns exec ns1 ping -c 3 192.0.2.3
 ```
 bridge fdb show br br0 | grep -i 00:00:5e
 ```
+
+# DHCPを使ったネットワーク設定
+## やってくれること
+- IPアドレスの割り当て
+- ルーティングテーブルの設定
+- DNSサーバの設定
+- NTPサーバの設定
+
+## 目標の構成図
+![dhcp](https://github.com/JumpeiTamura/tcpip/blob/master/img/ns-dhcp.png "dhcp")
+※dockerだとdhclientが使えなかったのでホストマシン上に直に構築した。
+
+## netns作成
+```
+ip netns add client
+ip netns add server
+```
+## veth作成
+```
+ip link add c-veth0 type veth peer name s-veth0
+```
+## 作成したvethをnetnsに割り当て
+```
+ip link set c-veth0 netns client
+ip link set s-veth0 netns server
+```
+## vethにIPアドレスを割り当て
+```
+ip netns exec server ip addr add 192.0.2.254/24 dev s-veth0
+```
+## vethのステータスをUP
+```
+ip netns exec client ip link set c-veth0 up
+ip netns exec server ip link set s-veth0 up
+```
+
+## DHCPサーバの起動
+```
+ip netns exec server dnsmasq \
+--dhcp-range=192.0.2.100,192.0.2.200,255.255.255.0 \
+--interface=s-veth0 \
+--no-daemon
+```
+
+## clientからserverにアクセス
+```
+ip netns exec client dhclient c-veth0
+```
+
+## 設定内容確認
+```
+# IPアドレス
+ip netns exec client ip addr show | grep "inet"
+# ルーティングテーブル
+ip netns exec client ip route show
+```
+
+## 疎通確認
+```
+ip netns exec server ping -c 3 [設定されたclientのIPアドレス]
+```
+
+
