@@ -8,6 +8,7 @@
 - [DHCPを使ったネットワーク設定](#dhcpを使ったネットワーク設定)
 - [NATについて](#natについて)
 - [Source NATでIPアドレスの書き換え](#source-natでipアドレスの書き換え)
+- [Destinaton NATでIPアドレスの書き換え](#destinaton-natでipアドレスの書き換え)
 
 # Network Namespace(netns)の使い方
 ## 新規作成
@@ -367,6 +368,8 @@ ip netns exec server ping -c 3 [設定されたclientのIPアドレス]
 - ローカルIPを何らかの方法でグローバルIPに変換する必要がある
 - IPだけでなくPortも書き換えるのでNAPTとも言う
 - Source NATとDestination NATがある
+- Source NAT : Source（送信元）を書き換えるよ
+- Destination NAT : Destination（送信先）を書き換えるよ
 
 # Source NATでIPアドレスの書き換え
 ## Source NATとは
@@ -428,10 +431,10 @@ ip netns exec wan ip route add default via 203.0.113.254
 ## iptablesの設定
 ```
 ip netns exec router iptables -t nat \
--A POSTROUTING \
--s 192.0.2.0/24 \
--o gw-veth1 \
--j MASQUERADE
+-A POSTROUTING \  # パケットが出ていく直前のタイミングで
+-s 192.0.2.0/24 \ # 送信元IPアドレスの範囲はこれ
+-o gw-veth1 \ # 出力先のインターフェースはgw-veth1
+-j MASQUERADE # ルールはマスカレード(Source NAT)
 ```
 
 ## iptablesの確認
@@ -458,4 +461,52 @@ ip netns exec wan tcpdump -tnl -i wan-veth0 icmp
 # IPアドレスが書き換えられた！
 ```
 
+# Destinaton NATでIPアドレスの書き換え
+## Destination NAT(DNAT)とは
+- サーバ用途で使われるノードはグローバルから通信できる必要がある
+- このため、Source NATとは逆にグローバルIPをローカルIPに変換する必要がある
+- 具体的にはポート番号とローカルIPを対応させる
+- 一般的にポート開放と言われてるやつはこれ
 
+## 目標の構成図
+※Source NATのときと同じ構成を利用するので引き続きやる場合は設定不要
+![snat](https://github.com/JumpeiTamura/tcpip/blob/master/img/ns-snat.png "snat")
+
+## DNATの設定
+```
+ip netns exec router iptables -t nat \
+-A PREROUTING \ # パケットが入ってきたタイミングで
+-p tcp \  # TCPプロトコルで
+--dport 54321 \ # 54321ポートで
+-d 203.0.113.254 \  # 送信先IPがこれの場合
+-j DNAT \ # ルールはDNATで
+--to-destination 192.0.2.1  # 送信先はこれに変換する
+```
+
+## iptablesの確認
+```
+ip netns exec router iptables -t nat -L
+```
+
+## サーバ起動
+```
+ip netns exec lan nc -lnv 54321
+```
+
+## クライアントからアクセス
+```
+ip netns exec wan nc 203.0.113.254 54321
+```
+
+## クライアント側をtcpdump
+```
+ip netns exec wan tcpdump -tnl -i wan-veth0 "tcp and port 54321"
+# wan <-> router のIPアドレスが表示される
+```
+
+## サーバ側をtcpdump
+```
+ip netns exec lan tcpdump -tnl -i lan-veth0 "tcp and port 54321"
+# wan <-> lan のIPアドレスが表示される
+# IPアドレスが書き換えられた！
+```
