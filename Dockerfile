@@ -14,4 +14,5 @@ RUN apt-get install -y \
 	gawk \
 	dnsutils \
 	procps \
-	iptables
+	iptables \
+	vim
